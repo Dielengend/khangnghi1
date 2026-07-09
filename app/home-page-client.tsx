@@ -41,20 +41,11 @@ function formatCooldownTime(seconds: number, locale: Locale) {
   const remainingSeconds = seconds % 60;
   const segments: string[] = [];
 
-  if (locale === "vi") {
-    if (minutes > 0) {
-      segments.push(`${minutes} phút`);
-    }
-    if (remainingSeconds > 0) {
-      segments.push(`${remainingSeconds} giây`);
-    }
-  } else {
-    if (minutes > 0) {
-      segments.push(`${minutes} minute${minutes > 1 ? "s" : ""}`);
-    }
-    if (remainingSeconds > 0) {
-      segments.push(`${remainingSeconds} second${remainingSeconds > 1 ? "s" : ""}`);
-    }
+  if (minutes > 0) {
+    segments.push(`${minutes} minute${minutes > 1 ? "s" : ""}`);
+  }
+  if (remainingSeconds > 0) {
+    segments.push(`${remainingSeconds} second${remainingSeconds > 1 ? "s" : ""}`);
   }
 
   return segments.join(" ");
