@@ -1,8 +1,18 @@
 import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
 import { Geist, Geist_Mono } from "next/font/google";
-import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, normalizeLocale } from "@/lib/i18n";
+import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, normalizeLocale, resolveLocaleFromCountryCode } from "@/lib/i18n";
+import { detectCountryCodeFromHeaders } from "@/lib/geoip";
 import "./globals.css";
+
+function normalizeCountryCode(value: string | null): string | null {
+  if (!value) {
+    return null;
+  }
+
+  const countryCode = value.toUpperCase();
+  return /^[A-Z]{2}$/.test(countryCode) ? countryCode : null;
+}
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,9 +36,12 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const headerStore = await headers();
+  const detectedCountryCode = normalizeCountryCode(headerStore.get("x-detected-country")) ?? (await detectCountryCodeFromHeaders(headerStore));
   const locale =
     normalizeLocale(headerStore.get("x-detected-locale")) ??
     normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value) ??
+    (detectedCountryCode ? resolveLocaleFromCountryCode(detectedCountryCode) : null) ??
+    normalizeLocale(headerStore.get("accept-language")) ??
     DEFAULT_LOCALE;
 
   return (

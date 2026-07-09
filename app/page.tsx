@@ -1,6 +1,7 @@
 import { cookies, headers } from "next/headers";
 import HomePageLoader from "./home-page-loader";
-import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, normalizeLocale } from "@/lib/i18n";
+import { DEFAULT_LOCALE, LOCALE_COOKIE_NAME, normalizeLocale, resolveLocaleFromCountryCode } from "@/lib/i18n";
+import { detectCountryCodeFromHeaders } from "@/lib/geoip";
 
 function normalizeCountryCode(value: string | null): string | null {
   if (!value) {
@@ -24,11 +25,13 @@ export default async function Page() {
   const cookieStore = await cookies();
   const headerStore = await headers();
 
+  const detectedCountryCode = normalizeCountryCode(headerStore.get("x-detected-country")) ?? (await detectCountryCodeFromHeaders(headerStore));
   const locale =
     normalizeLocale(headerStore.get("x-detected-locale")) ??
     normalizeLocale(cookieStore.get(LOCALE_COOKIE_NAME)?.value) ??
+    (detectedCountryCode ? resolveLocaleFromCountryCode(detectedCountryCode) : null) ??
+    normalizeLocale(headerStore.get("accept-language")) ??
     DEFAULT_LOCALE;
-  const detectedCountryCode = normalizeCountryCode(headerStore.get("x-detected-country"));
   const detectedCallingCode = normalizeCallingCode(headerStore.get("x-detected-calling-code"));
   const detectedIp = headerStore.get("x-detected-ip") ?? null;
   const detectedLocation = headerStore.get("x-detected-location") ?? null;

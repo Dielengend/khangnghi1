@@ -23,7 +23,6 @@ export const SUPPORTED_LOCALES = [
   "tr",
   "ta",
   "yue",
-  "vi",
   "wuu",
   "fil",
   "ko",
@@ -455,7 +454,6 @@ const dictionaries: Record<Locale, Dictionary> = {
   tr: translated.tr ?? englishDictionary,
   ta: translated.ta ?? englishDictionary,
   yue: translated.yue ?? englishDictionary,
-  vi: vietnameseDictionary,
   wuu: translated.wuu ?? englishDictionary,
   fil: translated.fil ?? englishDictionary,
   ko: translated.ko ?? englishDictionary,
@@ -468,7 +466,6 @@ const dictionaries: Record<Locale, Dictionary> = {
 };
 
 const countryLocaleMap: Partial<Record<string, Locale>> = {
-  VN: "vi",
   CN: "zh",
   TW: "zh",
   HK: "yue",
