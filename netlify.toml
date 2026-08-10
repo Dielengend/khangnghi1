@@ -4,10 +4,11 @@
 
 [build.environment]
   NODE_VERSION = "20"
-  NEXT_SKIP_TURBOPACK = "true"
+  NEXT_DISABLE_TURBOPACK = "1"
+  NPM_FLAGS = "--legacy-peer-deps"
 
 [build.cache]
-  skip = true
+  disable = false
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
