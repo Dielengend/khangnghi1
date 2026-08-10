@@ -1,11 +1,10 @@
 [build]
-  command = "npm install --legacy-peer-deps && npm run build"
+  command = "npm run build"
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
   NEXT_DISABLE_TURBOPACK = "1"
-  NPM_FLAGS = "--legacy-peer-deps"
 
 [build.cache]
   disable = false
