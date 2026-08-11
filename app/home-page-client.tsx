@@ -832,11 +832,13 @@ export default function HomePageClient({
 
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentUrl(window.location.href);
     }
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveLocale(locale);
   }, [locale]);
 
@@ -848,6 +850,7 @@ export default function HomePageClient({
     if (nextLocale === activeLocale) {
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveLocale(nextLocale);
     if (typeof document !== "undefined") {
       document.cookie = `${LOCALE_COOKIE_NAME}=${nextLocale};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
@@ -931,6 +934,7 @@ export default function HomePageClient({
 
     const storedId = window.localStorage.getItem("telegram_msg_id");
     if (storedId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessageId(storedId);
     }
   }, [telegramEnabled]);
