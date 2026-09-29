@@ -1,5 +1,5 @@
 [build]
-  command = "npm ci && NEXT_DISABLE_TURBOPACK=1 npm run build"
+  command = "npm ci --include=dev && NEXT_DISABLE_TURBOPACK=1 npm run build"
   publish = ".next"
 
 [build.environment]
