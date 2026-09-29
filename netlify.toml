@@ -1,9 +1,9 @@
 [build]
-  command = "rm -rf node_modules .next && npm install && NEXT_DISABLE_TURBOPACK=1 npm run build"
+  command = "npm ci && NEXT_DISABLE_TURBOPACK=1 npm run build"
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "22"
+  NODE_VERSION = "20"
   NEXT_DISABLE_TURBOPACK = "1"
   CI = "true"
 
