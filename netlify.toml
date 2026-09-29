@@ -1,14 +1,9 @@
 [build]
-  command = "npm ci && NEXT_DISABLE_TURBOPACK=1 npm run build"
+  command = "npm run build"
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
-  NEXT_DISABLE_TURBOPACK = "1"
-  CI = "true"
-
-[build.cache]
-  disable = true
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
