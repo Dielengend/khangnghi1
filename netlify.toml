@@ -1,5 +1,5 @@
 [build]
-  command = "npm ci && NEXT_DISABLE_TURBOPACK=1 npm run build"
+  command = "pnpm run build"
   publish = ".next"
 
 [build.environment]
@@ -12,9 +12,3 @@
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
-
-[context.production]
-  environment = { NODE_ENV = "production" }
-
-[context.deploy-preview]
-  environment = { NODE_ENV = "production" }
