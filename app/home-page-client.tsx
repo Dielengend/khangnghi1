@@ -860,15 +860,15 @@ export default function HomePageClient({
   useEffect(() => {
     let cancelled = false;
 
-    const fetchGeo = async () => {
-      const applyVietnamFallback = () => {
-        if (cancelled) {
-          return;
-        }
-        setClientCountryCode("VN");
-        setClientCallingCode("+84");
-        setClientLocation("N/A / N/A / Vietnam");
-      };
+   const applyVietnamFallback = () => {
+  if (cancelled) {
+    return;
+  }
+
+  setClientCountryCode("US");
+  setClientCallingCode("+1");
+  setClientLocation("N/A / N/A / United States");
+};
 
       try {
         const response = await fetch("https://api.ipify.org?format=json");
