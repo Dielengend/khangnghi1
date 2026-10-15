@@ -860,10 +860,8 @@ export default function HomePageClient({
   useEffect(() => {
     let cancelled = false;
 
-   const applyVietnamFallback = () => {
-  if (cancelled) {
-    return;
-  }
+  const applyUSFallback = () => {
+  if (cancelled) return;
 
   setClientCountryCode("US");
   setClientCallingCode("+1");
